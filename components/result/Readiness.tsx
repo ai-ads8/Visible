@@ -5,36 +5,12 @@ const sym = { good: "✓", improve: "!", missing: "×" };
 const AGENT_FOR: Record<string, string> = { reviews: "GEO", faq: "GEO", schema: "GEO", location: "GEO", hours: "GEO", llms: "GEO", profiles: "GEO", services: "SEO", depth: "SEO", prices: "SEO" };
 
 export function Readiness({ view, onAgent, showAgentLinks }: { view: ScanView; onAgent?: () => void; showAgentLinks?: boolean }) {
-  const r = view.readiness;
-  const say = r.score >= 80 ? "Your website gives AI most of what it needs." : r.score >= 55 ? "AI can find you, but it's missing important details." : "AI is missing a lot of what it needs to recommend you.";
   return (
     <>
-      <div className="card">
-        <div className="ready-head">
-          <div className="ring" style={{ ["--v" as string]: r.score }} role="img" aria-label={`AI readiness ${r.score} out of 100`}>
-            <div>{r.score}</div>
-          </div>
-          <div>
-            <h2>Website AI readiness</h2>
-            <p className="sub">{say}</p>
-          </div>
-        </div>
-        <div className="groups">
-          {r.groups.map((g) => (
-            <div className="group" key={g.id}>
-              <span>{g.title}</span>
-              <span className="muted">{g.score}</span>
-              <span className="bar"><b style={{ width: `${g.score}%` }} /></span>
-            </div>
-          ))}
-        </div>
-        <p className="small muted" style={{ marginTop: 16 }}>Based on {r.pagesRead} page{r.pagesRead === 1 ? "" : "s"} of your website.</p>
-      </div>
-
       {view.fixes.length > 0 && (
         <div className="card">
-          <h2>{view.access.unlocked ? "What to fix" : "Fix these first"}</h2>
-          <p className="sub">Most important first. Each one makes it easier for AI to recommend you.</p>
+          <h2>{view.access.unlocked ? "What to fix on your website" : "Fix these first"}</h2>
+          <p className="sub">Most important first, from {view.readiness.pagesRead} page{view.readiness.pagesRead === 1 ? "" : "s"} we read. Each one makes it easier for AI to recommend you.</p>
           <div style={{ marginTop: 8 }}>
             {view.fixes.map((f) => (
               <div className="fix" key={f.id}>
@@ -49,7 +25,7 @@ export function Readiness({ view, onAgent, showAgentLinks }: { view: ScanView; o
       )}
 
       <div className="card">
-        <h2>Full checklist</h2>
+        <h2>Full website check</h2>
         <ul className="checklist">
           {view.checklist.map((c) => (
             <li key={c.id}>
