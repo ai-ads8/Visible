@@ -1,16 +1,15 @@
 import type { ScanView } from "@/lib/view";
 
-export function Unlock({ view }: { view: ScanView }) {
+export function Unlock({ view, onAgents }: { view: ScanView; onAgents: () => void }) {
   const signedIn = view.access.signedIn;
-  const owner = view.access.owner;
   return (
     <div className="unlock">
-      <h2 style={{ fontSize: 26 }}>See the full picture</h2>
-      <p>Every AI answer in full, every competitor, your complete fix list, and checks every week to see if it&apos;s working.</p>
+      <h2 style={{ fontSize: 28 }}>Let your agents fix it</h2>
+      <p>Every answer, every competitor, and your GEO, SEO and Social agents working for you.</p>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <a className="btn" href={signedIn ? "/pricing" : `/signup?scan=${view.id}`}>{signedIn ? "See plans" : "Unlock my report"}</a>
+        <a className="btn" href={signedIn ? "/pricing" : `/signup?scan=${view.id}&plan=growth`}>Unlock everything</a>
+        <button className="btn quiet" type="button" onClick={onAgents}>Meet your agents</button>
         {!signedIn && view.access.control && <a className="btn quiet" href={`/signup?scan=${view.id}&plan=free`}>Save it for free</a>}
-        {signedIn && !owner && view.access.control && <a className="btn quiet" href="/dashboard">Go to dashboard</a>}
       </div>
     </div>
   );

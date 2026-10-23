@@ -42,8 +42,8 @@ export const PLANS: Record<PlanId, Plan> = {
     businesses: 1,
     questions: 20,
     cadence: "daily",
-    blurb: "For owners who want to win.",
-    features: ["20 customer questions", "Daily check", "Everything in Starter", "Progress chart", "Edit your questions"],
+    blurb: "Your three agents, working for you.",
+    features: ["20 customer questions, daily", "GEO, SEO and Social agents", "Review block, blogs and posts", "Everything in Starter"],
   },
   pro: {
     id: "pro",
@@ -53,7 +53,7 @@ export const PLANS: Record<PlanId, Plan> = {
     questions: 20,
     cadence: "daily",
     blurb: "For more than one location.",
-    features: ["3 businesses", "20 questions each", "Daily check", "Everything in Growth"],
+    features: ["3 businesses", "All three agents for each", "Everything in Growth"],
   },
 };
 

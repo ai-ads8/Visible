@@ -6,13 +6,19 @@ import { Verdict } from "./Verdict";
 import { Readiness } from "./Readiness";
 import { Answers } from "./Answers";
 import { Unlock } from "./Unlock";
+import { Agents } from "./Agents";
+
+type Tab = "overview" | "agents" | "website";
 
 export function ResultApp({ id }: { id: string }) {
   const [view, setView] = useState<ScanView | null>(null);
   const [error, setError] = useState("");
   const [starting, setStarting] = useState(false);
   const [checkError, setCheckError] = useState("");
+  const [tab, setTab] = useState<Tab>("overview");
+  const [editing, setEditing] = useState(false);
   const running = useRef(false);
+  const autoStarted = useRef(false);
 
   const load = useCallback(async () => {
     const r = await fetch(`/api/scan/${id}`, { cache: "no-store" });
@@ -46,13 +52,7 @@ export function ResultApp({ id }: { id: string }) {
     [load]
   );
 
-  useEffect(() => {
-    load().then((v) => {
-      if (v && v.round?.status === "running" && v.access.control) drive(v.round.id);
-    });
-  }, [load, drive]);
-
-  async function startCheck() {
+  const startCheck = useCallback(async () => {
     setStarting(true);
     setCheckError("");
     const r = await fetch(`/api/scan/${id}/check`, { method: "POST" });
@@ -61,7 +61,19 @@ export function ResultApp({ id }: { id: string }) {
     if (!r.ok) return setCheckError(j.error || "The AI check couldn't start.");
     await load();
     drive(j.roundId);
-  }
+  }, [id, load, drive]);
+
+  useEffect(() => {
+    load().then((v) => {
+      if (!v) return;
+      if (v.round?.status === "running" && v.access.control) drive(v.round.id);
+      // Details read automatically from the site: go straight to the AI check, like one flow.
+      else if (!v.round && v.access.control && v.profile.confirmed && v.profile.auto && v.access.measure === "live" && !autoStarted.current) {
+        autoStarted.current = true;
+        startCheck();
+      }
+    });
+  }, [load, drive, startCheck]);
 
   if (error)
     return (
@@ -70,7 +82,7 @@ export function ResultApp({ id }: { id: string }) {
           <div className="card">
             <h2>{error}</h2>
             <p className="sub">If you ran this scan on another device, sign in or start a new scan.</p>
-            <p style={{ marginTop: 18 }}><a className="btn" href="/#scan">Scan my website</a></p>
+            <p><a className="btn" href="/#scan">Scan my website</a></p>
           </div>
         </div>
       </section>
@@ -81,68 +93,83 @@ export function ResultApp({ id }: { id: string }) {
       <section className="result">
         <div className="wrap stack">
           <div className="skeleton" style={{ width: "40%" }} />
-          <div className="skeleton" style={{ height: 160, borderRadius: 22 }} />
+          <div className="skeleton" style={{ height: 200, borderRadius: 28 }} />
           <div className="skeleton" style={{ height: 120, borderRadius: 22 }} />
         </div>
       </section>
     );
 
   const p = view.profile;
-  const icon = `https://${p.domain}/favicon.ico`;
-  const needsConfirm = view.access.control && !p.confirmed;
-  const canStart = view.access.control && p.confirmed && !view.round && view.access.measure !== "off";
+  const needsConfirm = view.access.control && (!p.confirmed || editing);
+  const canStart = view.access.control && p.confirmed && !editing && !view.round && view.access.measure !== "off";
+  const done = view.round?.status === "done";
+  const where = p.reach === "local" ? [p.city].filter(Boolean).join(", ") : "Online";
 
   return (
     <section className="result">
       <div className="wrap">
-        <div className="site-chip">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={icon} alt="" onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")} />
-          <span>{p.domain}</span>
+        <div className="bizhead">
+          <div className="mono" aria-hidden="true">{(p.name.match(/\p{L}/u)?.[0] || "V").toUpperCase()}</div>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ fontSize: "clamp(28px, 6vw, 44px)" }}>{p.name}</h1>
+            <div className="chips">
+              {[p.domain, p.category, where].filter(Boolean).map((c) => <span className="chipx" key={c}>{c}</span>)}
+              {view.access.control && p.confirmed && !editing && <button className="linkbtn" type="button" onClick={() => setEditing(true)}>Edit details</button>}
+            </div>
+          </div>
         </div>
-        <h1 style={{ fontSize: "clamp(32px, 7vw, 52px)" }}>{p.name}</h1>
-        <p className="lede" style={{ marginTop: 8 }}>
-          {view.round?.status === "done" ? "Here's how AI sees your business." : needsConfirm ? "Your website check is ready. One quick step before we ask AI." : "Your website check is ready."}
-        </p>
 
-        <div className="flow" style={{ marginTop: 24 }}>
-          {view.round?.kind === "demo" && (
-            <p className="notice">
-              Test mode: these are sample answers with made-up businesses, not real AI results. Live AI checks are switched off.
-            </p>
+        {done && (
+          <div className="tabs" role="tablist" style={{ marginTop: 22 }}>
+            {(["overview", "agents", "website"] as Tab[]).map((t) => (
+              <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} type="button">
+                {t === "overview" ? "Overview" : t === "agents" ? <>AI agents<span className="count">3</span></> : "Website"}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flow" style={{ marginTop: 18 }}>
+          {view.round?.kind === "demo" && <p className="notice">Test mode: sample answers with made-up businesses, not real AI results.</p>}
+
+          {needsConfirm && (
+            <ConfirmCard
+              view={view}
+              onSaved={async () => {
+                setEditing(false);
+                await load();
+              }}
+            />
           )}
-
-          {needsConfirm && <ConfirmCard view={view} onSaved={load} />}
-
-          {view.round && <Verdict view={view} />}
 
           {canStart && (
             <div className="card">
               <h2>Now let&apos;s ask AI</h2>
-              <p className="sub">
-                We&apos;ll ask {Math.min(view.questions.length, view.access.unlocked ? 20 : 5)} questions your customers ask, like “{view.questions[0]?.text}”. It takes about a minute.
-              </p>
-              <div style={{ marginTop: 18 }}>
-                <button className="btn" onClick={startCheck} disabled={starting}>{starting ? "Starting…" : "Check AI now"}</button>
-              </div>
+              <p className="sub">We&apos;ll ask {Math.min(view.questions.length, view.access.unlocked ? 20 : 5)} questions your customers ask, like “{view.questions[0]?.text}”. It takes about a minute.</p>
+              <div><button className="btn" onClick={startCheck} disabled={starting}>{starting ? "Starting…" : "Check AI now"}</button></div>
               {checkError && <p className="error" role="alert">{checkError}</p>}
             </div>
           )}
-          {view.round && checkError && <p className="error" role="alert">{checkError}</p>}
 
           {view.access.control && p.confirmed && !view.round && view.access.measure === "off" && (
             <div className="card">
               <h2>The AI check is almost ready</h2>
-              <p className="sub">We&apos;re switching on live AI checks. Your website check below is complete and free. Create an account and we&apos;ll keep your results.</p>
-              {!view.access.signedIn && <p style={{ marginTop: 18 }}><a className="btn" href={`/signup?scan=${view.id}`}>Save my results</a></p>}
+              <p className="sub">Live AI checks aren&apos;t switched on yet. Your website check is complete and free.</p>
+              {!view.access.signedIn && <p><a className="btn" href={`/signup?scan=${view.id}`}>Save my results</a></p>}
             </div>
           )}
 
-          {view.round && view.round.answers.length > 0 && <Answers view={view} />}
+          {(!done || tab === "overview") && view.round && (
+            <>
+              <Verdict view={view} />
+              {checkError && <p className="error" role="alert">{checkError}</p>}
+              {view.round.answers.length > 0 && <Answers view={view} />}
+              {done && !view.access.unlocked && <Unlock view={view} onAgents={() => setTab("agents")} />}
+            </>
+          )}
 
-          <Readiness view={view} />
-
-          {!view.access.unlocked && <Unlock view={view} />}
+          {done && tab === "agents" && <Agents view={view} reload={load} />}
+          {((done && tab === "website") || !view.round) && <Readiness view={view} onAgent={() => setTab("agents")} showAgentLinks={done} />}
         </div>
       </div>
     </section>

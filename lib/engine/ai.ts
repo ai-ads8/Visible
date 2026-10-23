@@ -6,7 +6,7 @@ import "server-only";
  *  - the user location is the business's own country/city instead of always the Netherlands;
  *  - the recommended businesses are listed by the same call (on a marked last line) instead of a second
  *    extraction call, so a question never costs more than one call;
- *  - English instructions.
+ *  - answers in the language of the question (customers ask in their own language).
  * Nothing here runs unless lib/guard.ts allows it.
  */
 
@@ -27,7 +27,7 @@ export const maxCostPerQuestion = () => costOf(measureModel(), { input: 12_000, 
 const MARK = "@@BUSINESSES";
 
 const instructions = (country: string, city: string) =>
-  `You are a helpful AI assistant. A user${city ? ` in ${city}` : ""}${country ? ` (${country})` : ""} asks you a question. Search the web and give a concrete, honest answer in English. Where it fits, name specific businesses (with their website if you know it), in the order you would recommend them, with one short reason each. Keep it under 150 words.
+  `You are a helpful AI assistant. A user${city ? ` in ${city}` : ""}${country ? ` (${country})` : ""} asks you a question. Search the web and give a concrete, honest answer in the language of the question. Where it fits, name specific businesses (with their website if you know it), in the order you would recommend them, with one short reason each. Keep it under 150 words.
 After your answer, add one final line that starts with ${MARK} followed by a JSON array of the businesses you recommended, in order, like: ${MARK} [{"name":"…","website":"…"}]. Use [] when you named none. Only real businesses you can visit or hire — no directories, review sites or marketplaces.`;
 
 export interface Asked {
@@ -103,6 +103,51 @@ export async function askLikeCustomer(question: string, where: { country: string
   const usage = { input: json.usage?.input_tokens || 0, output: json.usage?.output_tokens || 0, searches: (json.output || []).filter((i) => i.type === "web_search_call").length };
   const { text, businesses } = splitBusinesses(texts.join("").trim());
   return { text, sources: [...new Set(sources)].slice(0, 12), businesses, costUsd: costOf(model, usage), model: "ChatGPT" };
+}
+
+/** Model for profile reading, agents and writing (one call each). */
+export const agentModel = () => process.env.OPENAI_AGENT_MODEL || "gpt-6.1-sol";
+/** Worst case for one writing call, reserved before it is made. */
+export const maxCostPerWrite = (model = agentModel()) => costOf(model, { input: 16_000, output: 3_500, searches: 0 });
+/** Model for reading a website on the free scan: cheap, since every visitor triggers it. */
+export const profileModel = () => process.env.OPENAI_PROFILE_MODEL || measureModel();
+
+/** One OpenAI call that must answer with a JSON object (no web search). */
+export async function aiJson<T>(instructions: string, input: string, maxOutputTokens = 3000, model = agentModel()): Promise<{ data: T; costUsd: number }> {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error("OPENAI_API_KEY missing");
+  const body: Record<string, unknown> = {
+    model,
+    instructions: instructions + " Reply with one valid JSON object only, no other text.",
+    input,
+    max_output_tokens: maxOutputTokens,
+    reasoning: { effort: "low" },
+    text: { format: { type: "json_object" } },
+  };
+  const OPTIONAL = ["reasoning", "text"];
+  let json: { output?: OutputItem[]; usage?: { input_tokens?: number; output_tokens?: number } } | null = null;
+  for (let attempt = 0; attempt <= OPTIONAL.length && !json; attempt++) {
+    const res = await fetch(`${process.env.OPENAI_BASE_URL || "https://api.openai.com"}/v1/responses`, {
+      method: "POST",
+      signal: AbortSignal.timeout(55_000),
+      headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) json = await res.json();
+    else {
+      const err = (await res.text()).slice(0, 300);
+      const bad = res.status === 400 ? OPTIONAL.find((k) => k in body && err.includes(k)) : undefined;
+      if (!bad) throw new Error(`OpenAI ${res.status}: ${err}`);
+      delete body[bad];
+    }
+  }
+  if (!json) throw new Error("OpenAI: no answer");
+  const text = (json.output || []).filter((i) => i.type === "message").flatMap((i) => i.content || []).filter((c) => c.type === "output_text").map((c) => c.text || "").join("");
+  const costUsd = costOf(model, { input: json.usage?.input_tokens || 0, output: json.usage?.output_tokens || 0, searches: 0 });
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0) throw new Error("OpenAI: no JSON in answer");
+  return { data: JSON.parse(text.slice(start, end + 1)) as T, costUsd };
 }
 
 /*

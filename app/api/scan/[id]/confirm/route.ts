@@ -4,9 +4,12 @@ import { currentUser, visitorHash } from "@/lib/auth";
 import { canControl, getScan, saveScan } from "@/lib/scans";
 import { buildQuestions } from "@/lib/engine/questions";
 import { summarize } from "@/lib/engine/readiness";
+import { readProfile } from "@/lib/engine/autoprofile";
+import { liveEnabled } from "@/lib/guard";
 import { body, fail, sameOrigin } from "@/lib/http";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -30,8 +33,16 @@ export async function POST(req: Request, { params }: Ctx) {
   if (!parsed.ok) return parsed.res;
   if (parsed.data.reach === "local" && !parsed.data.city) return fail("Enter the city you serve.");
   // Changing details after official checks would make the trend meaningless; the history keeps old rounds as they were.
-  scan.profile = { ...scan.profile, ...parsed.data, confirmed: true };
+  scan.profile = { ...scan.profile, ...parsed.data, confirmed: true, auto: false };
   scan.questions = buildQuestions(scan.profile);
+  // With live AI on, rewrite the questions from the corrected details, in the customers' language.
+  if (liveEnabled() && scan.pages?.length) {
+    const read = await readProfile(scan.pages, scan.profile, parsed.data);
+    if (read) {
+      scan.profile = { ...read.profile, ...parsed.data, confirmed: true, auto: false };
+      scan.questions = read.questions;
+    }
+  }
   // Location and opening hours only matter for local businesses.
   if (scan.profile.reach === "online") scan.readiness = summarize(scan.readiness.checks.filter((c) => c.id !== "location" && c.id !== "hours"), scan.readiness.pagesRead);
   await saveScan(scan);

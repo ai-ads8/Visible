@@ -2,6 +2,7 @@ import { ScanForm } from "@/components/ScanForm";
 import { ChatIllustration } from "@/components/ChatIllustration";
 import { PlanCards } from "@/components/PlanCards";
 import { FAQ } from "@/lib/content";
+import { AGENTS, ICON } from "@/components/agentsMeta";
 
 export default function Home() {
   return (
@@ -10,7 +11,7 @@ export default function Home() {
         <div className="wrap">
           <div className="copy">
             <h1>Your competitors show up in AI. Do you?</h1>
-            <p className="lede">See if ChatGPT and other AI tools recommend your business, discover what&apos;s missing, and know exactly what to improve.</p>
+            <p className="lede">See if ChatGPT and other AI tools recommend your business. Then three AI agents fix what&apos;s missing for you.</p>
             <ScanForm id="scan" />
           </div>
           <ChatIllustration />
@@ -63,10 +64,28 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="section" id="agents">
+        <div className="wrap">
+          <div className="section-head">
+            <h2>Three AI agents, one goal: get you recommended.</h2>
+            <p>Each agent does one job well, using your own website and your real reviews.</p>
+          </div>
+          <div className="crew">
+            {AGENTS.map((a) => (
+              <article key={a.id} className={`crew-card a-${a.id}`}>
+                <div className="avatar">{ICON[a.id]}</div>
+                <div><h3>{a.name}</h3><p className="role">{a.role}</p></div>
+                <ul>{a.does.map((d) => <li key={d}>{d}</li>)}</ul>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="section" id="pricing">
         <div className="wrap">
           <div className="section-head">
-            <h2>Start free. Upgrade when you want to track it.</h2>
+            <h2>Start free. Add your agents when you&apos;re ready.</h2>
             <p>Monthly plans, cancel any time.</p>
           </div>
           <PlanCards />

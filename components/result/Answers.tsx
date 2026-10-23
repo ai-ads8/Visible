@@ -1,6 +1,6 @@
 import type { ScanView } from "@/lib/view";
 
-const badge = { named: "Named you", linked: "Linked your site", absent: "Didn't name you" };
+const badge = { named: "Recommended you", linked: "Linked your site", absent: "Didn't recommend you" };
 
 export function Answers({ view }: { view: ScanView }) {
   const r = view.round!;

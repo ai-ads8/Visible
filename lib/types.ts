@@ -15,6 +15,10 @@ export interface BusinessProfile {
   reach: "local" | "online";
   /** Which values the owner confirmed (the scan only guessed the others). */
   confirmed: boolean;
+  /** Language the customers speak (ISO 639-1); questions are asked in it. */
+  language?: string;
+  /** True when the details were read from the website by AI (the owner can still edit them). */
+  auto?: boolean;
 }
 
 export type CheckStatus = "good" | "improve" | "missing";
@@ -98,6 +102,42 @@ export interface Scan {
   history: RoundSummary[];
   /** Hash of the anonymous visitor key that may open this scan before it is saved to an account. */
   visitorHash: string;
+  /** Readable text of the pages that were read (trimmed), for the agents. Never sent to the browser. */
+  pages?: { url: string; text: string }[];
+  agents?: AgentsState;
+}
+
+export interface ReviewItem {
+  quote: string;
+  author?: string;
+  rating?: number;
+  source: string;
+  url?: string;
+  when?: string;
+}
+
+export interface Blog {
+  title: string;
+  meta: string;
+  slug: string;
+  intro: string;
+  sections: { heading: string; paragraphs: string[]; bullets: string[] }[];
+  faq: { q: string; a: string }[];
+  cta: string;
+}
+
+export interface AgentsState {
+  geo?: {
+    ranAt: string;
+    reviews: ReviewItem[];
+    rating?: { value: number; count?: number; source: string; url?: string };
+    facts: { address?: string; postalCode?: string; phone?: string; email?: string; openingHours?: string; priceRange?: string; description?: string };
+    faq: { q: string; a: string }[];
+    llms: string;
+    note?: string;
+  };
+  seo?: { ranAt: string; keywords: { keyword: string; real: boolean; why: string }[]; picked?: string; blog?: Blog };
+  social?: { ranAt: string; posts: { review: number; headline: string; quote: string; caption: string; hashtags: string[] }[] };
 }
 
 export interface RoundSummary {

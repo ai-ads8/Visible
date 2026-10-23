@@ -42,22 +42,24 @@ export async function allowFreeRound(ipHash: string): Promise<string | null> {
 }
 
 /**
- * Reserves the worst-case cost of one question against today's budget and question cap. Returns a settle function
- * that books the real cost afterwards, or null when the budget or cap is reached (no call may be made then).
+ * Reserves a worst-case cost against today's budget (and, for customer questions, the daily question cap) BEFORE a
+ * paid call. Returns a settle function that books the real cost afterwards, or null when the limit is reached
+ * (no call may be made then).
  */
-export async function reserveQuestion(): Promise<null | ((actualUsd: number) => Promise<void>)> {
-  const max = maxCostPerQuestion();
-  const spent = await kvIncr(`spend:${today()}`, max, DAY);
-  const count = await kvIncr(`questions:${today()}`, 1, DAY);
+export async function reserveSpend(maxUsd: number, countsAsQuestion = false): Promise<null | ((actualUsd: number) => Promise<void>)> {
+  const spent = await kvIncr(`spend:${today()}`, maxUsd, DAY);
+  const count = countsAsQuestion ? await kvIncr(`questions:${today()}`, 1, DAY) : 0;
   if (spent > dailyBudgetUsd() || count > dailyQuestionLimit()) {
-    await kvIncr(`spend:${today()}`, -max, DAY);
-    await kvIncr(`questions:${today()}`, -1, DAY);
+    await kvIncr(`spend:${today()}`, -maxUsd, DAY);
+    if (countsAsQuestion) await kvIncr(`questions:${today()}`, -1, DAY);
     return null;
   }
   return async (actual: number) => {
-    await kvIncr(`spend:${today()}`, actual - max, DAY);
+    await kvIncr(`spend:${today()}`, actual - maxUsd, DAY);
   };
 }
+
+export const reserveQuestion = () => reserveSpend(maxCostPerQuestion(), true);
 
 export async function usageToday() {
   return {

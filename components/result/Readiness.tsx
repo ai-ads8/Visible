@@ -2,7 +2,9 @@ import type { ScanView } from "@/lib/view";
 
 const sym = { good: "✓", improve: "!", missing: "×" };
 
-export function Readiness({ view }: { view: ScanView }) {
+const AGENT_FOR: Record<string, string> = { reviews: "GEO", faq: "GEO", schema: "GEO", location: "GEO", hours: "GEO", llms: "GEO", profiles: "GEO", services: "SEO", depth: "SEO", prices: "SEO" };
+
+export function Readiness({ view, onAgent, showAgentLinks }: { view: ScanView; onAgent?: () => void; showAgentLinks?: boolean }) {
   const r = view.readiness;
   const say = r.score >= 80 ? "Your website gives AI most of what it needs." : r.score >= 55 ? "AI can find you, but it's missing important details." : "AI is missing a lot of what it needs to recommend you.";
   return (
@@ -39,7 +41,7 @@ export function Readiness({ view }: { view: ScanView }) {
                 <span className={`mark ${f.status}`} aria-hidden="true">{sym[f.status]}</span>
                 <p className="label">{f.label}</p>
                 <p className="why">{f.why}</p>
-                <p className="todo"><strong>Do this:</strong> {f.fix}{f.evidence ? <span className="ev" style={{ display: "block" }}>Found: {f.evidence}</span> : null}</p>
+                <p className="todo"><strong>Do this:</strong> {f.fix} {showAgentLinks && AGENT_FOR[f.id] && onAgent ? <button type="button" className="linkbtn" onClick={onAgent}>Let the {AGENT_FOR[f.id]} agent do it</button> : null}{f.evidence ? <span className="ev" style={{ display: "block" }}>Found: {f.evidence}</span> : null}</p>
               </div>
             ))}
           </div>

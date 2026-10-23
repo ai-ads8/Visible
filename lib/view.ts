@@ -1,10 +1,11 @@
 import "server-only";
-import type { User } from "./auth";
+import { isAdmin, type User } from "./auth";
+import { agentsAllowed } from "./agents";
 import { isPaid, PLANS } from "./plans";
 import { measureMode } from "./guard";
 import { topFixes } from "./engine/readiness";
 import { competitorTable } from "./scans";
-import type { CheckStatus, Mention, Round, Scan } from "./types";
+import type { AgentsState, CheckStatus, Mention, Round, Scan } from "./types";
 
 /*
  * What the browser may see of a scan. Locked parts are left out on the server (not just blurred with CSS), so the
@@ -37,12 +38,14 @@ export interface ScanView {
   };
   competitors: { name: string; count: number; isYou: boolean; locked: boolean }[];
   history: Scan["history"];
-  access: { control: boolean; owner: boolean; unlocked: boolean; signedIn: boolean; plan: string; measure: "live" | "demo" | "off" };
+  agents: AgentsState;
+  access: { control: boolean; owner: boolean; unlocked: boolean; agents: boolean; signedIn: boolean; plan: string; measure: "live" | "demo" | "off" };
 }
 
 export function scanView(scan: Scan, round: Round | null, ctx: { user: User | null; control: boolean }): ScanView {
   const owner = !!ctx.user && scan.ownerId === ctx.user.id;
-  const unlocked = owner && isPaid(ctx.user!.plan);
+  const unlocked = owner && (isPaid(ctx.user!.plan) || isAdmin(ctx.user));
+  const agents = agentsAllowed(ctx.user, scan);
   const fixes = topFixes(scan.readiness, unlocked ? 50 : 3);
   const comp = competitorTable(scan, round);
   const done = round?.answers || [];
@@ -88,6 +91,7 @@ export function scanView(scan: Scan, round: Round | null, ctx: { user: User | nu
       return { name: locked ? "" : c.name, count: c.count, isYou: c.isYou, locked };
     }),
     history: unlocked ? scan.history : scan.history.slice(-1),
-    access: { control: ctx.control, owner, unlocked, signedIn: !!ctx.user, plan: ctx.user?.plan || "free", measure: measureMode() },
+    agents: agents ? scan.agents || {} : {},
+    access: { control: ctx.control, owner, unlocked, agents, signedIn: !!ctx.user, plan: ctx.user?.plan || "free", measure: measureMode() },
   };
 }

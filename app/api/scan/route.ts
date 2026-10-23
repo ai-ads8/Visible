@@ -9,6 +9,8 @@ import { clientIpHash, currentUser, visitorHash } from "@/lib/auth";
 import { newScanId, saveScan } from "@/lib/scans";
 import { hit, today } from "@/lib/store";
 import { audit } from "@/lib/audit";
+import { readProfile } from "@/lib/engine/autoprofile";
+import { liveEnabled } from "@/lib/guard";
 import { body, fail, sameOrigin } from "@/lib/http";
 import type { Scan } from "@/lib/types";
 
@@ -31,7 +33,14 @@ export async function POST(req: Request) {
     const url = normalizeInputUrl(parsed.data.url);
     const result = await crawl(url);
     const country = (req.headers.get("x-vercel-ip-country") || "").toUpperCase();
-    const profile = guessProfile(result, country);
+    const pages = result.pages.map((pg) => ({ url: pg.url, text: pg.text.slice(0, pg === result.pages[0] ? 8000 : 5000) }));
+    let profile = guessProfile(result, country);
+    let questions = buildQuestions(profile);
+    // With live AI on, the details and the questions (in the customers' language) are read from the site: no form.
+    if (liveEnabled()) {
+      const read = await readProfile(pages, profile);
+      if (read) ({ profile, questions } = read);
+    }
     const readiness = buildReadiness(result, profile);
     const user = await currentUser();
     const scan: Scan = {
@@ -40,8 +49,9 @@ export async function POST(req: Request) {
       updatedAt: new Date().toISOString(),
       profile,
       readiness,
-      questions: buildQuestions(profile),
+      questions,
       history: [],
+      pages,
       visitorHash: (await visitorHash(true))!,
       ownerId: undefined,
     };

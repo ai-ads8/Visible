@@ -15,6 +15,12 @@ Completely separate from Ai Ads: own code, own deployment, own database, own acc
 - **Accounts** (`/signup`, `/signin`, `/dashboard`) — email + password (scrypt), signed session cookie; a scan is saved to the account on sign-up. Saved scans are private.
 - **Billing** (`/pricing`) — Stripe Checkout + Customer Portal + signed webhook. Plans in `lib/plans.ts` (Free, Starter €19, Growth €29, Pro €49).
 - **Scheduled checks** — `/api/cron/checks` (Vercel Cron, daily) for paid plans: daily or weekly per plan.
+- **Automatic reading** — with live AI on, every scan reads the site with one cheap AI call: name, type, town, country, language and 20 customer questions in the customers' own language. No form; "Edit details" stays available.
+- **AI agents** (Growth, Pro and admins), each run on one click:
+  - **GEO agent** — real Google reviews (Places API) with author and link, a review block to paste on the site, LocalBusiness + FAQ schema, an FAQ and llms.txt written from the site's own text.
+  - **SEO agent** — real Google search suggestions for the business and town, then a ~550-word blog for the search the owner picks (title, meta description, slug, HTML).
+  - **Social agent** — posts built on real 4–5★ reviews: a 1080×1080 image drawn in the browser plus caption and hashtags.
+  Nothing is invented: reviews are only quoted from Google; texts use only facts from the site.
 - **Admin** (`/admin`, emails in `ADMIN_EMAILS`) — AI mode, today's spend vs budget, safeguards, audit log.
 
 ## Cost safeguards (all server-side, `lib/guard.ts`)
@@ -49,8 +55,9 @@ npm test                     # offline tests, no network
    - `ADMIN_EMAILS` — your email
    - `CRON_SECRET` — another new random value
 5. **Deploy.** Open the URL, run a scan, create an account with your admin email, open `/admin`.
-6. **Switch on real AI checks** when you're ready: add `OPENAI_API_KEY` (a **new key** made for Visible, so usage is separate from Ai Ads), `VISIBLE_LIVE_MEASUREMENTS=on`, and optionally `DAILY_BUDGET_USD`. Redeploy. Also set a monthly usage limit on the key in the OpenAI dashboard as a second safety net.
-7. **Payments:** in Stripe create one product with three monthly prices (€19/€29/€49), then set `STRIPE_SECRET_KEY`, `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_GROWTH`, `STRIPE_PRICE_PRO`. Add a webhook to `https://<your-url>/api/billing/webhook` with events `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, and set `STRIPE_WEBHOOK_SECRET`. Turn on the Customer Portal in Stripe settings.
+6. **Agents:** add `GOOGLE_PLACES_API_KEY` (Google Cloud → Places API (New), with a budget alert). Admin emails can use the agents without paying, for testing.
+7. **Switch on real AI checks** when you're ready: add `OPENAI_API_KEY` (a **new key** made for Visible, so usage is separate from Ai Ads), `VISIBLE_LIVE_MEASUREMENTS=on`, and optionally `DAILY_BUDGET_USD`. Redeploy. Also set a monthly usage limit on the key in the OpenAI dashboard as a second safety net.
+8. **Payments:** in Stripe create one product with three monthly prices (€19/€29/€49), then set `STRIPE_SECRET_KEY`, `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_GROWTH`, `STRIPE_PRICE_PRO`. Add a webhook to `https://<your-url>/api/billing/webhook` with events `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, and set `STRIPE_WEBHOOK_SECRET`. Turn on the Customer Portal in Stripe settings.
 
 ## Not done yet / decide before launch
 

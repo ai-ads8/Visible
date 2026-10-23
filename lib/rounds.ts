@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { audit } from "./audit";
-import { newId, type User } from "./auth";
+import { isAdmin, newId, type User } from "./auth";
 import { askLikeCustomer, sampleAnswer, measureModel, type Asked } from "./engine/ai";
 import { detectMention } from "./engine/mentions";
 import { allowFreeRound, claimDailyRound, clampQuestions, lockRound, measureMode, reserveQuestion, todaysRoundId, unlockRound } from "./guard";
@@ -25,7 +25,8 @@ export async function startRound(scan: Scan, who: { user: User | null; ipHash: s
   if (mode === "off") throw new RoundError("The AI check isn't switched on yet. Your website check above is complete and free.");
   if (!scan.profile.confirmed) throw new RoundError("Confirm your business details first.");
 
-  const plan = who.user && scan.ownerId === who.user.id ? PLANS[who.user.plan] : PLANS.free;
+  const owner = !!who.user && scan.ownerId === who.user.id;
+  const plan = owner ? PLANS[isAdmin(who.user) && who.user!.plan === "free" ? "growth" : who.user!.plan] : PLANS.free;
   const count = clampQuestions(Math.min(plan.questions, scan.questions.length));
 
   if (mode === "live") {
@@ -41,7 +42,7 @@ export async function startRound(scan: Scan, who: { user: User | null; ipHash: s
       if (plan.cadence === "once") throw new RoundError("Your free check is done. Upgrade to track your visibility over time.");
       if (plan.cadence === "weekly" && days < 7) throw new RoundError(`Your next weekly check is available in ${Math.ceil(7 - days)} day(s).`);
     }
-    if (!isPaid(who.user?.plan)) {
+    if (!isPaid(plan.id)) {
       const refused = await allowFreeRound(who.ipHash);
       if (refused) {
         await audit("round.refused", who.user?.id || "visitor", { scan: scan.id, reason: "free limit" });
