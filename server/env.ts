@@ -40,3 +40,9 @@ export function parseEnv(vars: Record<string, string | undefined>): Env {
 export function env(): Env {
   return (cached ??= parseEnv(process.env));
 }
+
+/** What is missing or wrong in the configuration (variable names only, never values). Empty when all is fine. */
+export function envProblems(): string[] {
+  const r = schema.safeParse(process.env);
+  return r.success ? [] : r.error.issues.map((i) => i.message);
+}

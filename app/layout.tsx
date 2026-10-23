@@ -5,6 +5,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { currentUser } from "@/lib/auth";
+import { envProblems } from "@/server/env";
 
 const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -18,6 +19,19 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#ffffff", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const problems = envProblems();
+  if (problems.length)
+    return (
+      <html lang="en">
+        <body style={{ ["--font-display" as string]: "'Bricolage Grotesque Variable'", ["--font-body" as string]: "'Hanken Grotesk Variable'" }}>
+          <main className="narrow">
+            <h1>Visible is almost ready</h1>
+            <p className="muted" style={{ marginTop: 12 }}>The site isn&apos;t fully set up yet. In Vercel, add or fix these, then redeploy:</p>
+            <ul style={{ marginTop: 16 }}>{problems.map((p) => <li key={p}>{p}</li>)}</ul>
+          </main>
+        </body>
+      </html>
+    );
   const user = await currentUser().catch(() => null);
   return (
     <html lang="en">
