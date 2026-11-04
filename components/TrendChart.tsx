@@ -10,9 +10,9 @@ export function TrendChart({ history }: { history: RoundSummary[] }) {
   const d = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.total ? p.named / p.total : 0).toFixed(1)}`).join(" ");
   return (
     <svg className="chart" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label="How often AI named you, per check">
-      {[0, 0.5, 1].map((g) => <line key={g} x1={pad} x2={W - pad} y1={y(g)} y2={y(g)} stroke="#e7e6ec" strokeWidth="1" />)}
-      <path d={d} fill="none" stroke="#5a3cf0" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-      {pts.map((p, i) => <circle key={i} cx={x(i)} cy={y(p.total ? p.named / p.total : 0)} r="3.5" fill="#5a3cf0"><title>{`${p.date.slice(0, 10)}: named in ${p.named} of ${p.total}`}</title></circle>)}
+      {[0, 0.5, 1].map((g) => <line key={g} x1={pad} x2={W - pad} y1={y(g)} y2={y(g)} stroke="#1e2949" strokeWidth="1" />)}
+      <path d={d} fill="none" stroke="#38e0a0" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+      {pts.map((p, i) => <circle key={i} cx={x(i)} cy={y(p.total ? p.named / p.total : 0)} r="3.5" fill="#38e0a0"><title>{`${p.date.slice(0, 10)}: named in ${p.named} of ${p.total}`}</title></circle>)}
     </svg>
   );
 }

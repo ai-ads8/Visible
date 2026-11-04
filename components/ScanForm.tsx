@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function ScanForm({ id, dark = false }: { id?: string; dark?: boolean }) {
+export function ScanForm({ id }: { id?: string; dark?: boolean }) {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -31,11 +31,11 @@ export function ScanForm({ id, dark = false }: { id?: string; dark?: boolean }) 
           onChange={(e) => setUrl(e.target.value)}
           required
           minLength={3}
-          style={dark ? { color: "var(--ink)" } : undefined}
+          
         />
         <button className="btn" disabled={busy}>{busy ? "Starting…" : "Scan my website"}</button>
       </div>
-      <p className="small" style={{ color: dark ? "#a9a6b6" : "var(--graphite)" }}>Free. No sign-up. Takes about 30 seconds.</p>
+      <p className="small">Free. No sign-up. Takes about 30 seconds.</p>
       {error && <p className="error" role="alert">{error}</p>}
     </form>
   );
