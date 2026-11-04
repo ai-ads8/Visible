@@ -8,6 +8,10 @@ import { buildQuestions } from "../lib/engine/questions";
 import { verifyStripe } from "../lib/billing";
 import { clampQuestions, HARD_MAX_QUESTIONS } from "../lib/guard";
 import { parsePage } from "../lib/engine/extract";
+import { openPlaceholders, pageHtml, slugify } from "../lib/pagekit";
+import { applyEdit, PageError } from "../lib/pages";
+import { normalizeSite } from "../lib/cms";
+import type { Scan, WinPage } from "../lib/types";
 
 let n = 0;
 const t = (name: string, fn: () => void) => {
@@ -69,5 +73,42 @@ t("extract: page facts", () => {
   assert.equal(p.jsonld[0]["@type"], "Dentist");
   assert.ok(p.questions.includes("Do you deliver?"));
 });
+
+/* ---------------- pages that win ---------------- */
+const page = (over: Partial<WinPage> = {}): WinPage => ({
+  id: "p1", questionId: "q1", question: "Best dentist in Austin?", status: "draft", createdAt: "2026-11-01", updatedAt: "2026-11-01",
+  title: "Dentist in Austin", slug: "dentist-austin", meta: "m", answer: "Lakeside Dental is a dentist in Austin. Prices from [[add: your starting price]].",
+  sections: [{ heading: "What we do", text: "Cleanings.\n\n- Whitening\n- Fillings" }], faqTitle: "Questions", faq: [{ q: "Open Saturday?", a: "Yes." }], cta: "Call us <today>", rivals: ["Oak"], angle: "", ...over,
+});
+const scanWith = (p: WinPage[]) => ({ winPages: p } as unknown as Scan);
+
+t("pages: placeholders are found", () => assert.deepEqual(openPlaceholders(page()), ["your starting price"]));
+t("pages: slugify strips accents and symbols", () => assert.equal(slugify("Tandarts Één — Kerkrade!"), "tandarts-een-kerkrade"));
+t("pages: html escapes, lists, FAQ schema, no competitor names", () => {
+  const h = pageHtml(page({ answer: "A <b>" }));
+  assert.ok(h.includes("A &lt;b&gt;"));
+  assert.ok(h.includes("<li>Whitening</li>"));
+  assert.ok(h.includes('"@type":"FAQPage"'));
+  assert.ok(h.includes("Call us &lt;today&gt;"));
+  assert.ok(!h.includes("Oak"));
+});
+t("pages: can't approve with open placeholders", () => assert.throws(() => applyEdit(scanWith([page()]), "p1", { status: "approved" }), PageError));
+t("pages: can't approve a sample", () => assert.throws(() => applyEdit(scanWith([page({ answer: "Full answer here, no gaps at all.", sample: true })]), "p1", { status: "approved" }), PageError));
+t("pages: filling the gap then approving works", () => {
+  const out = applyEdit(scanWith([page()]), "p1", { answer: "Lakeside Dental is a dentist in Austin. Prices from $99.", status: "approved" });
+  assert.equal(out[0].status, "approved");
+});
+t("pages: editing a live page sends it back to draft", () => {
+  const live = page({ answer: "Done answer, all filled in.", status: "published", published: { platform: "wordpress", remoteId: "1", at: "x", live: true } });
+  const out = applyEdit(scanWith([live]), "p1", { title: "New title here" });
+  assert.equal(out[0].status, "draft");
+  assert.ok(out[0].published?.live);
+});
+t("pages: slugs never collide", () => {
+  const out = applyEdit(scanWith([page(), page({ id: "p2", slug: "taken" })]), "p1", { slug: "taken" });
+  assert.equal(out[0].slug, "taken-2");
+});
+t("cms: shopify address must be myshopify", () => assert.throws(() => normalizeSite("shopify", "mystore.com")));
+t("cms: wordpress address gets https", () => assert.equal(normalizeSite("wordpress", "site.com/"), "https://site.com"));
 
 console.log(`\n${n} tests passed`);

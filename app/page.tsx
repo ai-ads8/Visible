@@ -1,8 +1,8 @@
 import { ScanForm } from "@/components/ScanForm";
-import { ChatIllustration } from "@/components/ChatIllustration";
+import { HeroBoard } from "@/components/HeroBoard";
 import { PlanCards } from "@/components/PlanCards";
 import { FAQ } from "@/lib/content";
-import { AGENTS, ICON } from "@/components/agentsMeta";
+import { CREW, ICON } from "@/components/agentsMeta";
 
 export default function Home() {
   return (
@@ -11,67 +11,67 @@ export default function Home() {
         <div className="wrap">
           <div className="copy">
             <h1>Your competitors show up in AI. Do you?</h1>
-            <p className="lede">See if ChatGPT and other AI tools recommend your business. Then three AI agents fix what&apos;s missing for you.</p>
+            <p className="lede">See every question your customers ask ChatGPT, which ones you win, and who takes the rest. Then Visible writes the pages that win them back.</p>
             <ScanForm id="scan" />
+            <div className="proof">
+              <span><i />Real ChatGPT answers, with live web search</span>
+              <span><i />Nothing goes on your site without your OK</span>
+            </div>
           </div>
-          <ChatIllustration />
+          <HeroBoard />
         </div>
       </section>
 
       <section className="section" id="how">
         <div className="wrap">
           <div className="section-head">
-            <h2>How it works</h2>
-            <p>Three steps. No setup, no jargon.</p>
+            <h2>From invisible to named, in four steps</h2>
+            <p>No setup and no jargon. You see the real answers, and you see them change.</p>
           </div>
-          <ol className="steps">
-            <li>
-              <h3>Enter your website</h3>
-              <p>We read your site the way AI tools do and check what they can find about you.</p>
-            </li>
-            <li>
-              <h3>We ask AI what your customers ask</h3>
-              <p>Questions like “best plumber in my town”, asked to ChatGPT with live search.</p>
-            </li>
-            <li>
-              <h3>See where you stand</h3>
-              <p>Whether AI names you, who it picks instead, and the fixes that matter most.</p>
-            </li>
+          <ol className="loop">
+            <li><h3>Scan your website</h3><p>We read your site the way AI tools do: what you offer, where, and what&apos;s missing.</p></li>
+            <li><h3>See your scoreboard</h3><p>We ask ChatGPT the questions your customers ask. Each one is won, lost, or a near miss.</p></li>
+            <li><h3>Win the questions you lose</h3><p>The page agent writes one page per lost question, from your own site. You approve and publish.</p></li>
+            <li><h3>Watch the score move</h3><p>Every check asks the same questions again, so you see which pages turned a loss into a win.</p></li>
           </ol>
         </div>
       </section>
 
-      <section className="section band">
-        <div className="wrap split">
-          <div>
-            <h2>Customers ask AI now. It names only a few.</h2>
-            <div className="points">
-              <div>
-                <h3>One short answer, not ten pages</h3>
-                <p>An AI assistant usually recommends a handful of businesses. If you&apos;re not one of them, you&apos;re invisible for that customer.</p>
-              </div>
-              <div>
-                <h3>AI picks what it can understand</h3>
-                <p>Clear services, location, reviews and answers on your website make it easier for AI to choose you.</p>
-              </div>
-              <div>
-                <h3>You can see it, and fix it</h3>
-                <p>Visible shows the real answers and tells you, in plain words, what to change first.</p>
-              </div>
-            </div>
+      <section className="section">
+        <div className="wrap feature flip">
+          <div className="copy">
+            <h2>A page for every question you lose</h2>
+            <p>AI recommends the business whose website answers the question best. So for each lost question, the page agent writes exactly that page.</p>
+            <ul className="ticks">
+              <li>The answer AI can quote comes first, with your name and town</li>
+              <li>Written only from your website; gaps are left for you to fill in</li>
+              <li>Approve it, then publish to WordPress or Shopify in one click</li>
+              <li>Competitors are never mentioned on your page</li>
+            </ul>
           </div>
-          <ExampleReport />
+          <div className="pageshot" aria-label="Example page written by the page agent, fictional business">
+            <div className="bar"><span className="dots3"><i /><i /><i /></span>lakesidedental.com/teeth-whitening-austin</div>
+            <div className="body">
+              <h3>Teeth whitening in Austin</h3>
+              <p className="ans">Lakeside Dental Studio offers in-chair teeth whitening in Austin, done in one visit of about 90 minutes by our own dentists.</p>
+              <div className="ln" style={{ width: "94%" }} />
+              <div className="ln" style={{ width: "82%" }} />
+              <div className="ln" style={{ width: "88%" }} />
+              <div className="ln" style={{ width: "60%" }} />
+            </div>
+            <div className="foot"><span>For “How much is teeth whitening in Austin?”</span><span className="wp-state published">Live</span></div>
+          </div>
         </div>
       </section>
 
       <section className="section" id="agents">
         <div className="wrap">
           <div className="section-head">
-            <h2>Three AI agents, one goal: get you recommended.</h2>
-            <p>Each agent does one job well, using your own website and your real reviews.</p>
+            <h2>Four agents, one job: get you named</h2>
+            <p>Each one does a single thing well, using your own website and your real Google reviews. Nothing is made up.</p>
           </div>
           <div className="crew">
-            {AGENTS.map((a) => (
+            {CREW.map((a) => (
               <article key={a.id} className={`crew-card a-${a.id}`}>
                 <div className="avatar">{ICON[a.id]}</div>
                 <div><h3>{a.name}</h3><p className="role">{a.role}</p></div>
@@ -85,8 +85,8 @@ export default function Home() {
       <section className="section" id="pricing">
         <div className="wrap">
           <div className="section-head">
-            <h2>Start free. Add your agents when you&apos;re ready.</h2>
-            <p>Monthly plans, cancel any time.</p>
+            <h2>Start free. Start winning when you&apos;re ready.</h2>
+            <p>Monthly plans in euros. Cancel any time.</p>
           </div>
           <PlanCards />
         </div>
@@ -106,48 +106,15 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="section tight">
         <div className="wrap">
           <div className="cta-final">
-            <h2>Find out in 30 seconds.</h2>
-            <p>Free scan. No sign-up needed.</p>
+            <h2>See your scoreboard in a minute.</h2>
+            <p>Free scan, no sign-up needed.</p>
             <ScanForm id="scan-bottom" dark />
           </div>
         </div>
       </section>
     </>
-  );
-}
-
-/* A labelled example of the report, with fictional businesses. */
-function ExampleReport() {
-  const dots = ["named", "absent", "absent", "named", "absent", "absent", "absent", "absent"];
-  const rows = [
-    { n: "Brightside Dental", c: 6 },
-    { n: "Maple Family Dentistry", c: 5 },
-    { n: "Your business", c: 2, you: true },
-    { n: "Riverside Smile Studio", c: 2 },
-  ];
-  return (
-    <figure className="card" style={{ margin: 0 }} aria-label="Example report with fictional businesses">
-      <p className="small muted">Example report</p>
-      <div className="verdict" style={{ marginTop: 12, padding: 22 }}>
-        <div className="big" style={{ fontSize: 64 }}>2<span>/8</span></div>
-        <p className="line" style={{ fontSize: 17 }}>AI named you in 2 of 8 customer questions.</p>
-        <div className="dots" aria-hidden="true">
-          {dots.map((d, i) => <span key={i} className={`dot ${d}`} style={{ width: 22, height: 22 }} />)}
-        </div>
-      </div>
-      <h3 style={{ marginTop: 22, fontSize: 17 }}>Who AI recommends</h3>
-      <ul className="rank">
-        {rows.map((r) => (
-          <li key={r.n} className={r.you ? "you" : ""}>
-            <span className="name">{r.n}</span>
-            <span className="count">{r.c} of 8</span>
-            <span className="bar"><b style={{ width: `${(r.c / 8) * 100}%` }} /></span>
-          </li>
-        ))}
-      </ul>
-    </figure>
   );
 }

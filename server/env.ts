@@ -14,6 +14,8 @@ const schema = z
     SESSION_SECRET: secret("SESSION_SECRET"),
     /** Only the scheduler that sends `Authorization: Bearer <CRON_SECRET>` may start scheduled checks. Optional. */
     CRON_SECRET: secret("CRON_SECRET").optional(),
+    /** Encrypts the website logins used to publish pages. Optional: without it, publishing to a website is off. */
+    CMS_SECRET: secret("CMS_SECRET").optional(),
     UPSTASH_REDIS_REST_URL: z.string().url().optional(),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
     KV_REST_API_URL: z.string().url().optional(),

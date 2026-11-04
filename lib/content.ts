@@ -1,6 +1,14 @@
 /* Homepage FAQ. Honest answers only: no guarantees, no invented numbers. */
 export const FAQ: { q: string; a: string }[] = [
   {
+    q: "What is a page that wins?",
+    a: "For a customer question where AI recommends someone else, the page agent writes one page for your website that answers exactly that question: a direct answer first, then what you offer, where, and how to book, plus a short FAQ. It's written only from what's on your site; anything we can't find is left for you to fill in.",
+  },
+  {
+    q: "Do you publish anything without asking?",
+    a: "Never. Every page starts as a draft. You read it, fill in the gaps, approve it, and only then publish it to WordPress or Shopify with one click. Or copy the HTML and add it yourself.",
+  },
+  {
     q: "What does Visible actually check?",
     a: "Two things. First we read your website the way AI tools do and check whether it gives them what they need. Then we ask an AI assistant the questions your customers ask — like “best dentist in Austin” — and see whether it names your business, or someone else.",
   },
@@ -10,7 +18,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "What do the agents do?",
-    a: "The GEO agent collects your real Google reviews and builds a review block, business details and an FAQ for your website. The SEO agent finds what people search for and writes a blog. The Social agent turns a review into a ready-to-post image and caption.",
+    a: "The page agent writes a page for each customer question you lose. The GEO agent collects your real Google reviews and builds a review block, business details and an FAQ for your website. The SEO agent finds what people search for and writes a blog. The Social agent turns a review into a ready-to-post image and caption.",
   },
   { q: "Do the agents make things up?", a: "No. Reviews are only real Google reviews, with the reviewer's name and a link. Blogs and FAQs are written from what's on your own website. If something can't be found, the agent says so." },
   { q: "Is the scan really free?", a: "Yes. The website check and your first AI check are free, with no sign-up. Paid plans add more questions, every answer in full, all competitors and regular checks." },

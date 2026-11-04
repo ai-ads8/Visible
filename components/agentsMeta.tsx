@@ -2,6 +2,7 @@
 export const ICON: Record<string, React.ReactNode> = {
   geo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /><path d="M9.5 9.6l1.6 1.6 3.4-3.4" /></svg>,
   seo: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M20 20l-4.6-4.6" /><path d="M8 11.5l1.8-2 1.7 1.5 2-2.5" /></svg>,
+  page: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /><path d="M9 14.5l2 2 4-4" /></svg>,
   social: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="3.8" /><circle cx="17" cy="7" r=".6" fill="currentColor" /></svg>,
 };
 
@@ -11,3 +12,9 @@ export const AGENTS = [
   { id: "social", name: "Social agent", role: "Turns reviews into posts", what: "Picks your best reviews and turns them into Instagram and TikTok posts: the image and the caption.", does: ["Post images made from real reviews", "Caption and hashtags in your customers' language", "Download and post, in under a minute"] },
 ] as const;
 
+
+/* The homepage crew: the page agent (pages that win) next to the three website agents. */
+export const CREW = [
+  { id: "page", name: "Page agent", role: "Wins the questions you lose", does: ["One page per lost question", "Direct answer AI can quote, from your own site", "You approve, it publishes to WordPress or Shopify"] },
+  ...AGENTS.map((a) => ({ id: a.id, name: a.name, role: a.role, does: [...a.does] })),
+];

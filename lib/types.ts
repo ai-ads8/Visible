@@ -105,6 +105,51 @@ export interface Scan {
   /** Readable text of the pages that were read (trimmed), for the agents. Never sent to the browser. */
   pages?: { url: string; text: string }[];
   agents?: AgentsState;
+  /** Pages written to win the questions where AI picks someone else. */
+  winPages?: WinPage[];
+  /** The website this scan publishes to (the login itself is stored encrypted, apart from the scan). */
+  cms?: CmsLink;
+}
+
+export type CmsPlatform = "wordpress" | "shopify";
+
+export interface CmsLink {
+  platform: CmsPlatform;
+  /** WordPress: https://site.com ; Shopify: shop.myshopify.com */
+  site: string;
+  /** Who we're signed in as, shown to the owner. */
+  account: string;
+  connectedAt: string;
+}
+
+export type WinPageStatus = "draft" | "approved" | "published";
+
+export interface WinPage {
+  id: string;
+  questionId: string;
+  question: string;
+  status: WinPageStatus;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  slug: string;
+  /** Search result description, under 155 characters. */
+  meta: string;
+  /** The direct answer to the question, first on the page: the part an AI assistant quotes. */
+  answer: string;
+  /** Body sections; paragraphs separated by a blank line. */
+  sections: { heading: string; text: string }[];
+  /** Heading above the FAQ, in the page's language. */
+  faqTitle?: string;
+  faq: { q: string; a: string }[];
+  cta: string;
+  /** Businesses AI recommended for this question when the page was written (never named on the page). */
+  rivals: string[];
+  /** Why this page can win the question, in plain words for the owner. */
+  angle: string;
+  /** Sample page made in test mode, never from a real AI call. */
+  sample?: boolean;
+  published?: { platform: CmsPlatform; url?: string; remoteId: string; at: string; live: boolean };
 }
 
 export interface ReviewItem {

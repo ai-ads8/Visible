@@ -23,11 +23,11 @@ function useCountUp(target: number, ms = 1100) {
 function Gauge({ value, label, size = 168 }: { value: number; label: string; size?: number }) {
   const shown = useCountUp(value);
   const r = 70, c = 2 * Math.PI * r;
-  const tone = value >= 80 ? "#3bce7b" : value >= 55 ? "#ffc24b" : "#ff7a7e";
+  const tone = value >= 80 ? "var(--win)" : value >= 55 ? "var(--half)" : "var(--loss)";
   return (
     <div className="gauge" style={{ width: size, height: size }} role="img" aria-label={`${label}: ${value} out of 100`}>
       <svg viewBox="0 0 160 160" width={size} height={size} aria-hidden="true">
-        <circle cx="80" cy="80" r={r} fill="none" stroke="var(--night-line)" strokeWidth="12" />
+        <circle cx="80" cy="80" r={r} fill="none" stroke="var(--panel-3)" strokeWidth="12" />
         <circle cx="80" cy="80" r={r} fill="none" stroke={tone} strokeWidth="12" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - shown / 100)} transform="rotate(-90 80 80)" />
       </svg>
       <div className="gauge-num"><b>{shown}</b><span>{label}</span></div>

@@ -8,6 +8,8 @@ export interface Plan {
   priceEur: number;
   businesses: number;
   questions: number;
+  /** Pages that win, written per business per calendar month. */
+  pages: number;
   /** How often an official check may run per business. */
   cadence: "once" | "weekly" | "daily";
   blurb: string;
@@ -21,9 +23,10 @@ export const PLANS: Record<PlanId, Plan> = {
     priceEur: 0,
     businesses: 1,
     questions: 5,
+    pages: 0,
     cadence: "once",
     blurb: "See where you stand.",
-    features: ["Your AI visibility score", "5 real customer questions", "Your top 3 competitors", "Your biggest fix"],
+    features: ["Your AI visibility score", "5 real customer questions, won or lost", "Your top 3 competitors", "Your biggest fixes"],
   },
   starter: {
     id: "starter",
@@ -31,9 +34,10 @@ export const PLANS: Record<PlanId, Plan> = {
     priceEur: 19,
     businesses: 1,
     questions: 10,
+    pages: 0,
     cadence: "weekly",
     blurb: "Keep an eye on it every week.",
-    features: ["10 customer questions", "Weekly check", "Every AI answer, in full", "All competitors", "Full fix list"],
+    features: ["10 customer questions", "Weekly check", "Full scoreboard: every question, won or lost", "Every AI answer and competitor", "Full fix list"],
   },
   growth: {
     id: "growth",
@@ -41,9 +45,10 @@ export const PLANS: Record<PlanId, Plan> = {
     priceEur: 29,
     businesses: 1,
     questions: 20,
+    pages: 4,
     cadence: "daily",
-    blurb: "Your three agents, working for you.",
-    features: ["20 customer questions, daily", "GEO, SEO and Social agents", "Review block, blogs and posts", "Everything in Starter"],
+    blurb: "Win the questions you're losing.",
+    features: ["20 customer questions, daily", "4 pages that win a month, published for you", "GEO, SEO and Social agents", "Everything in Starter"],
   },
   pro: {
     id: "pro",
@@ -51,9 +56,10 @@ export const PLANS: Record<PlanId, Plan> = {
     priceEur: 49,
     businesses: 3,
     questions: 20,
+    pages: 12,
     cadence: "daily",
     blurb: "For more than one location.",
-    features: ["3 businesses", "All three agents for each", "Everything in Growth"],
+    features: ["3 businesses", "12 pages that win a month, per business", "All agents for each", "Everything in Growth"],
   },
 };
 

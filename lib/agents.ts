@@ -27,7 +27,7 @@ export const agentsAllowed = (user: User | null, scan: Scan) =>
 
 const lang = (scan: Scan) => scan.profile.language || "en";
 
-async function paidCall<T>(instructions: string, input: string, maxOut = 3500): Promise<T> {
+export async function paidCall<T>(instructions: string, input: string, maxOut = 3500): Promise<T> {
   if (!liveEnabled()) throw new AgentError("The agents aren't switched on yet.");
   const settle = await reserveSpend(maxCostPerWrite());
   if (!settle) throw new AgentError("Today's AI budget is used up. Try again tomorrow.");

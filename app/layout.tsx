@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: { title: "Your competitors show up in AI. Do you?", description: "Free scan: see if AI recommends your business, and what to fix.", siteName: "Visible", type: "website" },
 };
 
-export const viewport: Viewport = { themeColor: "#ffffff", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#0a0f1f", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const problems = envProblems();
